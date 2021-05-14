@@ -887,6 +887,29 @@ mlm_client_test (bool verbose)
     rc = zsock_wait (auth);
     assert (rc == 0);
 
+    /* Test double clients connect with same address
+     * https://github.com/zeromq/malamute/issues/318
+     */
+    mlm_client_t *client1 = mlm_client_new ();
+    assert (client1);
+    mlm_client_set_verbose (client1, verbose);
+    rc = mlm_client_set_plain_auth (client1, "writer", "secret");
+    assert ( rc == 0 );
+    rc = mlm_client_connect (client1, endpoint, 1000, "double_client");
+    assert (rc == 0);
+
+    mlm_client_t *client2 = mlm_client_new ();
+    assert (client2);
+    mlm_client_set_verbose (client2, verbose);
+    rc = mlm_client_set_plain_auth (client2, "writer", "secret");
+    assert ( rc == 0 );
+    rc = mlm_client_connect (client2, endpoint, 1000, "double_client");
+    assert (rc == 0);
+
+    mlm_client_destroy(&client1);
+    mlm_client_destroy(&client2);
+    /* end of Test double clients with same address */
+
     // Test the robustness of the client, againt server failure
     client = mlm_client_new ();
     assert (client);
